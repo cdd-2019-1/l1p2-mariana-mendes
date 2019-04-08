@@ -19,7 +19,7 @@ atividade = read_csv(here::here("data/atividade-por-perfil-20190322.csv"),
 
 ```
 
-## 1.  Qual o partido qual o partido mais assíduo  no twitter
+## 1.  Qual o partido qual o partido mais assíduo  no twitter?
 
 ```{r}
 
@@ -37,13 +37,14 @@ agrupados_partido %>%
 ```
 
 
-## 2. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
+##1. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
+  
+
 
 ```{r}
 
 ativos_2019_seguidores <- atividade %>% 
-  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, seguidores >= 200914,
- engaj_mediano_proprio > 20, engaj_total_retweet > 0)
+  filter(!is.na(twitter), seguidores != 0, segue != 0, seguidores >= 200914)
 
 ativos_2019_seguidores %>%
     ggplot(aes(x = nome_eleitoral, y = seguidores)) + coord_flip() +
@@ -51,20 +52,30 @@ ativos_2019_seguidores %>%
 
 ```
 
+Usaremos apenas os parlamentares ativos em 2019 e para facilitar a visualização foram selecionados apenas aqueles que possuem mais de 200914 seguidores (os 15 mais seguidos). 
+Observando o gráfico é possível saber facilmente qual o parlmentar mais popular, Romário, com  mais de 2500000 seguidores. Logo após vem José Serra e em seguida Flávio Bolsonaro. 
 
-## 3. O parlamentar mais retweetado também é o mais popular? (O alcance depende da quantidade de seguidores?)
 
-// pegar os 10 mais seguidos
-// retweets x seguidores 
 
+### 1.1 Os mais populares são também os mais ativos? 
 
 ```{r}
-ativos_2019 %>% filter(seguidores > 246058) %>%
-    ggplot(aes(x = n_retweet, y = seguidores, group=nome_eleitoral, shape=nome_eleitoral, colour=nome_eleitoral)) +
-    geom_line(aes(linetype=nome_eleitoral), size=1) +geom_path()
+ativos_2019 %>%
+    ggplot(aes(x = engaj_total, y = seguidores, colour=nome_eleitoral)) + 
+    geom_point(aes(size = seguidores), alpha =.5, color="red")
+
+```
+Segundo o gráfico apresentado o parlamentar que mais possui seguidores é também um dos que menos tem engage dentro da rede, contudo o comportamento mais comum é um equilíbrio entre quantidade de seguidores e engajamento. 
+
+
+### 1.2 Então quem são os mais populares? São os que mais produzem conteúdo próprio? 
+```{r}
+ativos_2019 %>% 
+  ggplot(aes(x = seguidores, y = n_proprio, group=engaj_total_proprio)) +geom_point(aes(size = engaj_total_proprio), alpha =.5, color="blue")
 
 
 ```
+
 
 
 ## 4. Qual partido que possui mais parlamentares ativos ? (possuem twitter)
@@ -78,14 +89,8 @@ partidos_assiduos <- ativos_2019 %>%
 ggplot(partidos_assiduos, aes(x = partido, y = count)) +    
      geom_jitter(width = 1, size = 4, alpha = .7, height = 1, aes(colour = partido))
 ```
-## 5. Os parlamentares que mais possuem conteúdo próprio são os mais populares?
-
-```{r}
-ativos_2019 %>% filter(engaj_mediano_proprio > 200) %>%
-  ggplot(aes(x = n_proprio, y = seguidores, group=engaj_total)) +geom_point(aes(size = engaj_total), alpha =.5, color="blue")
 
 
-```
 
 ## 6. Quais os estados que têm maior engajamento no twitter?
 ```{r}
