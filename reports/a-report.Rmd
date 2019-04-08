@@ -8,10 +8,64 @@ theme: sandstone
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(here)
 source(here::here("code/lib.R"))
 theme_set(theme_bw())
 ```
 
 ```{r read}
-atividade = read_projectdata()
+atividade = read_csv(here::here("data/atividade-por-perfil-20190322.csv"), 
+                    col_types = ("dcccccddddddddddddd")) 
+
 ```
+
+## 1.  Qual o partido qual o partido mais assíduo  no twitter
+// observar a partir de qtd de parlamentares ativos
+// depois analisar, dos ativos, quais os mais assíduos
+// classificar por partido
+
+```{r}
+
+ativos_2019 <- atividade %>% 
+  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, engaj_mediano_proprio > 20, engaj_total_retweet > 0)
+
+agrupados_partido <- ativos_2019 %>%
+  group_by(partido) %>% summarise(media = mean(engaj_mediano))
+
+agrupados_partido %>%
+    ggplot(aes(x = partido, y = media)) + 
+    geom_jitter(width = .05) +
+    labs(x = "partido", y = "media de engajamento")
+  
+
+```
+
+
+## 2. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
+
+```{r}
+
+```
+
+
+## 3. O parlamentar mais retweetado também é o mais popular? (O alcance depende da quantidade de seguidores?)
+
+```{r}
+
+```
+
+
+## 4. Qual partido que possui mais parlamentares ativos ? (possuem twitter)
+
+```{r}
+
+```
+
+
+## 5. Os parlamentares que mais possuem conteúdo próprio são os mais populares?
+
+```{r}
+
+```
+
+## 6. Quais os estados que têm maior engajamento no twitter?
