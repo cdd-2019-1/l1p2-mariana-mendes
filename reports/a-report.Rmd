@@ -67,13 +67,28 @@ partidos_assiduos <- ativos_2019 %>%
  group_by(partido) %>% summarise(count=n()) %>% inner_join(ativos_2019, by='partido')
 
 
-ggplot(partidos_assiduos, aes(x = partido, y = count)) +           
+ggplot(partidos_assiduos, aes(x = partido, y = count)) +    
      geom_jitter(width = 1, size = 4, alpha = .7, height = 1, aes(colour = partido))
 ```
 ## 5. Os parlamentares que mais possuem conteúdo próprio são os mais populares?
 
 ```{r}
+ativos_2019 %>% filter(engaj_mediano_proprio > 200) %>%
+  ggplot(aes(x = n_proprio, y = seguidores, group=engaj_total)) +geom_point(aes(size = engaj_total), alpha =.5, color="blue")
+
 
 ```
 
 ## 6. Quais os estados que têm maior engajamento no twitter?
+```{r}
+
+agrupados_partido <- ativos_2019 %>%
+  group_by(UF) %>% summarise(media = mean(engaj_mediano))
+
+agrupados_partido %>%
+    ggplot(aes(x = UF, y = media)) +
+    geom_col()
+  
+
+```
+
