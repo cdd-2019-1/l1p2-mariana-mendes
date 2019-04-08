@@ -54,7 +54,15 @@ ativos_2019_seguidores %>%
 
 ## 3. O parlamentar mais retweetado também é o mais popular? (O alcance depende da quantidade de seguidores?)
 
+// pegar os 10 mais seguidos
+// retweets x seguidores 
+
+
 ```{r}
+ativos_2019 %>% filter(seguidores > 246058) %>%
+    ggplot(aes(x = n_retweet, y = seguidores, group=nome_eleitoral, shape=nome_eleitoral, colour=nome_eleitoral)) +
+    geom_line(aes(linetype=nome_eleitoral), size=1) +geom_path()
+
 
 ```
 
