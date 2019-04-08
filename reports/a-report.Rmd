@@ -33,8 +33,8 @@ agrupados_partido <- ativos_2019 %>%
   group_by(partido) %>% summarise(media = mean(engaj_mediano))
 
 agrupados_partido %>%
-    ggplot(aes(x = partido, y = media)) + 
-    geom_jitter(width = .05) +
+    ggplot(aes(x = partido, y = media)) +
+    geom_col()
     labs(x = "partido", y = "media de engajamento")
   
 
@@ -44,6 +44,9 @@ agrupados_partido %>%
 ## 2. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
 
 ```{r}
+
+
+
 
 ```
 
