@@ -20,9 +20,6 @@ atividade = read_csv(here::here("data/atividade-por-perfil-20190322.csv"),
 ```
 
 ## 1.  Qual o partido qual o partido mais assíduo  no twitter
-// observar a partir de qtd de parlamentares ativos
-// depois analisar, dos ativos, quais os mais assíduos
-// classificar por partido
 
 ```{r}
 
@@ -66,9 +63,13 @@ ativos_2019_seguidores %>%
 
 ```{r}
 
+partidos_assiduos <- ativos_2019 %>% 
+ group_by(partido) %>% summarise(count=n()) %>% inner_join(ativos_2019, by='partido')
+
+
+ggplot(partidos_assiduos, aes(x = partido, y = count)) +           
+     geom_jitter(width = .1, size = 2, alpha = .5, height = .9, aes(colour = partido))
 ```
-
-
 ## 5. Os parlamentares que mais possuem conteúdo próprio são os mais populares?
 
 ```{r}
