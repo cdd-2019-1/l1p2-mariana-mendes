@@ -68,7 +68,7 @@ partidos_assiduos <- ativos_2019 %>%
 
 
 ggplot(partidos_assiduos, aes(x = partido, y = count)) +           
-     geom_jitter(width = .1, size = 2, alpha = .5, height = .9, aes(colour = partido))
+     geom_jitter(width = 1, size = 4, alpha = .7, height = 1, aes(colour = partido))
 ```
 ## 5. Os parlamentares que mais possuem conteúdo próprio são os mais populares?
 
