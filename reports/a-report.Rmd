@@ -35,7 +35,6 @@ agrupados_partido <- ativos_2019 %>%
 agrupados_partido %>%
     ggplot(aes(x = partido, y = media)) +
     geom_col()
-    labs(x = "partido", y = "media de engajamento")
   
 
 ```
@@ -45,8 +44,13 @@ agrupados_partido %>%
 
 ```{r}
 
+ativos_2019_seguidores <- atividade %>% 
+  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, seguidores >= 200914,
+ engaj_mediano_proprio > 20, engaj_total_retweet > 0)
 
-
+ativos_2019_seguidores %>%
+    ggplot(aes(x = nome_eleitoral, y = seguidores)) + coord_flip() +
+    geom_col()
 
 ```
 
