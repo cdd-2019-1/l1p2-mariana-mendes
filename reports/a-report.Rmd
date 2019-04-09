@@ -1,10 +1,13 @@
 ---
-title: "REPLACE ME"
+title: "Atividade dos congressistas no Twitter"
 output:
     html_document:
     df_print: paged
 theme: sandstone
 ---
+
+O pacote usado foi rtweet e uma lista de perfis de parlamentares.
+No total os dados são compostos por 72.316 tweets cuja data de criação é em 2019. As informações contidas no arquivo usado (atividade-por-perfil-20190322.csv) são em sua maioria, números relacionados a atividade de cada parlamentar na rede esse ano, como por exemplo o número de seguidores, número de tweets etc.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -19,25 +22,10 @@ atividade = read_csv(here::here("data/atividade-por-perfil-20190322.csv"),
 
 ```
 
-## 1.  Qual o partido qual o partido mais assíduo  no twitter?
-
-```{r}
-
-ativos_2019 <- atividade %>% 
-  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, engaj_mediano_proprio > 20, engaj_total_retweet > 0)
-
-agrupados_partido <- ativos_2019 %>%
-  group_by(partido) %>% summarise(media = mean(engaj_mediano))
-
-agrupados_partido %>%
-    ggplot(aes(x = partido, y = media)) +
-    geom_col()
-  
-
-```
 
 
-##1. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
+
+### 1. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
   
 
 
@@ -57,18 +45,23 @@ Observando o gráfico é possível saber facilmente qual o parlmentar mais popul
 
 
 
-### 1.1 Os mais populares são também os mais ativos? 
+#### 1.1 Os mais populares são também os mais ativos? 
 
 ```{r}
+ativos_2019 <- atividade %>% 
+  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, engaj_mediano_proprio > 20, engaj_total_retweet > 0)
+
+
 ativos_2019 %>%
     ggplot(aes(x = engaj_total, y = seguidores, colour=nome_eleitoral)) + 
     geom_point(aes(size = seguidores), alpha =.5, color="red")
 
 ```
-Segundo o gráfico apresentado o parlamentar que mais possui seguidores é também um dos que menos tem engage dentro da rede, contudo o comportamento mais comum é um equilíbrio entre quantidade de seguidores e engajamento. 
+
+Segundo o gráfico apresentado, o parlamentar que mais possui seguidores é também um dos que menos tem engage dentro da rede, contudo o comportamento mais comum é um equilíbrio entre quantidade de seguidores e engajamento. 
 
 
-### 1.2 Então quem são os mais populares? São os que mais produzem conteúdo próprio? 
+#### 1.2 Então quem são os mais populares? São os que mais produzem conteúdo próprio? 
 ```{r}
 ativos_2019 %>% 
   ggplot(aes(x = seguidores, y = n_proprio, group=engaj_total_proprio)) +geom_point(aes(size = engaj_total_proprio), alpha =.5, color="blue")
@@ -76,32 +69,55 @@ ativos_2019 %>%
 
 ```
 
+Existem alguns poucos casos de parlamentares que, segundo o gráfico, produzem pouco conteúdo próprio e tem muitos seguidores, três pontos distintitos estão de acordo com essa afirmação. A maioria segue um padrão bem próximo de quantidade de seguidores, mas a minoria produz algum conteúdo autoral. 
 
 
-## 4. Qual partido que possui mais parlamentares ativos ? (possuem twitter)
+
+### 2.  Qual o partido qual o partido mais assíduo  no twitter?
+
+```{r}
+
+ativos_2019 <- atividade %>% 
+  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, engaj_mediano_proprio > 20)
+
+agrupados_partido <- ativos_2019 %>%
+  group_by(partido) %>% summarise(media = mean(engaj_total))
+
+agrupados_partido %>%
+    ggplot(aes(x = partido, y = media)) +
+    geom_col()
+  
+
+```
+
+Os três partidos mais assíduos do Twitter, mostrados no gráfico, são PSOL, PSL e PCdoB. A assíduidade nesse caso foi calculada como a média do engajamento total do partido, ou seja (soma do engajamento_total de cada parlamentar/quantidade de parlamentares).
+
+
+
+#### 2.1 O partido que possui mais assíduo é também o que mais possui parlamentares ativos? (possuem twitter)
 
 ```{r}
 
 partidos_assiduos <- ativos_2019 %>% 
  group_by(partido) %>% summarise(count=n()) %>% inner_join(ativos_2019, by='partido')
 
-
-ggplot(partidos_assiduos, aes(x = partido, y = count)) +    
+ ggplot(partidos_assiduos, aes(x = partido, y = count)) +    
      geom_jitter(width = 1, size = 4, alpha = .7, height = 1, aes(colour = partido))
 ```
 
+De acordo com a resposta anterior, dos partidos mais ativos na rede, o PSL é o segundo mais assíduo e possui um dos maiores números de parlamentares ativos. Enquanto o PCdoB tem um número de participantes do twitter muito inferior ao PSL, contudo tem uma das maiores assiduidades. 
 
 
-## 6. Quais os estados que têm maior engajamento no twitter?
+#### 2.2 E o partido mais assíduo e/ou com mais parlamentares ativos, possui o maior número de seguidores no total?
 ```{r}
-
-agrupados_partido <- ativos_2019 %>%
-  group_by(UF) %>% summarise(media = mean(engaj_mediano))
-
-agrupados_partido %>%
-    ggplot(aes(x = UF, y = media)) +
-    geom_col()
+partidos_assiduos %>% 
+ group_by(partido, seguidores) %>% summarise(count=n()) %>% inner_join(ativos_2019, by='partido') %>%
+ ggplot( aes(x = partido, y = seguidores.y)) + geom_col() 
   
-
 ```
+
+O número de seguidores, nos dois casos em destaque (PSL e PT), realmente é proporcional a assíduidade do partido no Twitter, contudo, na maioria dos casos isso não ocorre. Alguns exemplos que podemos visualizar facilmente: PODE, que é o terceiro partido mais seguido e possui 4 parlamentares ativos, enquanto o PSDB possui o mesmo número, mas está muito atrás do PODE. 
+
+
+
 
