@@ -1,123 +1,115 @@
 ---
-title: "Atividade dos congressistas no Twitter"
+title: "Tweets dos congressitas brasileiros em 2019"
+author: Mariana Mendes.
 output:
-    html_document:
+  html_document:
     df_print: paged
-theme: sandstone
+    toc: yes  
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
 ---
 
-O pacote usado foi rtweet e uma lista de perfis de parlamentares.
-No total os dados são compostos por 72.316 tweets cuja data de criação é em 2019. As informações contidas no arquivo usado (atividade-por-perfil-20190322.csv) são em sua maioria, números relacionados a atividade de cada parlamentar na rede esse ano, como por exemplo o número de seguidores, número de tweets etc.
+```{r echo=FALSE, results="asis", cache=FALSE}
+## Global options
+options(scipen=999)
+options(max.print = "75")
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```
+
+```{r echo=FALSE}
 library(tidyverse)
-library(here)
 source(here::here("code/lib.R"))
 theme_set(theme_bw())
 ```
+Nesta análise iremos explorar dados sobre as contas do Twitter de nossos representantes federais em 2019. Analisaremos correlações entre algumas variáveis. Os dados brutos têm 72.316 tweets cuja data de criação segundo a API é em 2019. Esses tweets foram coletados em 22 de março de 2019.
 
+Primeiro vamos carregador nosso dados:
 ```{r read}
-atividade = read_csv(here::here("data/atividade-por-perfil-20190322.csv"), 
-                    col_types = ("dcccccddddddddddddd")) 
+atividade = read_projectdata()
+```
+
+```{r}
+ativos <- atividade %>% 
+  filter(!is.na(twitter), seguidores != 0, segue != 0) 
 
 ```
 
+Analisaremos a correlação entre número de seguidores e engajamento total, likes e retweets para todos os tweets vistos: 
+```{r}
+ativos %>% 
+  ggplot(aes(x = seguidores, y = engaj_total)) + 
+  geom_point() +
+  labs(title = "Distribuição dos seguidores pelo engajamento total",
+             y = "Engajamento", x = "Seguidores")
+```
 
 
+Os coeficientes de pearson e spearman foram bem distintos. O coeficiente de pearson é geralmente utilizado para medir relações lineares, já o de spearman monoticas.
+Mas o que isso quer dizer? Que as variáveis comparadas, o engajamento total e o número de seguidores tendem a mudar juntas, mas não necessariamente a uma taxa constante. 
 
-### 1. Quais os parlamentares mais populares (os mais seguidos) no twitter? 
-  
+```{r}
+ativos %>%
+    summarise(pearson = cor(seguidores, engaj_total, method = "pearson"), 
+            spearman = cor(seguidores, engaj_total, method = "spearman"),
+            kendall = cor(seguidores, engaj_total, method = "kendall"))
+```
+
+
+Podemos também correlacionar os parlamentares mais seguidos e os menos seguidos, verificando a correlação nesses dois casos. 
 
 
 ```{r}
 
-ativos_2019_seguidores <- atividade %>% 
-  filter(!is.na(twitter), seguidores != 0, segue != 0, seguidores >= 200914)
-
-ativos_2019_seguidores %>%
-    ggplot(aes(x = nome_eleitoral, y = seguidores)) + coord_flip() +
-    geom_col()
-
-```
-
-Usaremos apenas os parlamentares ativos em 2019 e para facilitar a visualização foram selecionados apenas aqueles que possuem mais de 200914 seguidores (os 15 mais seguidos). 
-Observando o gráfico é possível saber facilmente qual o parlmentar mais popular, Romário, com  mais de 2500000 seguidores. Logo após vem José Serra e em seguida Flávio Bolsonaro. 
+ativos %>%  
+  mutate(top = if_else(seguidores >= 146801, "Top 20 ", "Other")) %>% 
+  ggplot(aes(x = seguidores, y = engaj_total)) + 
+  geom_point(color = 'red', alpha = .7) + 
+  facet_wrap(~seguidores >= 146801)+
+     labs(title = "Distribuição dos seguidores pela atividade",
+             x = "Atividade", y = "Seguidores")
 
 
+ativos %>% filter(seguidores >= 146801) %>%
+    summarise(pearson = cor(seguidores, engaj_total, method = "pearson"), 
+            spearman = cor(seguidores, engaj_total, method = "spearman"),
+            kendall = cor(seguidores, engaj_total, method = "kendall"))
 
-#### 1.1 Os mais populares são também os mais ativos? 
-
-```{r}
-ativos_2019 <- atividade %>% 
-  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, engaj_mediano_proprio > 20, engaj_total_retweet > 0)
-
-
-ativos_2019 %>%
-    ggplot(aes(x = engaj_total, y = seguidores, colour=nome_eleitoral)) + 
-    geom_point(aes(size = seguidores), alpha =.5, color="red")
+ativos %>% filter(seguidores < 146801) %>%
+    summarise(pearson = cor(seguidores, engaj_total, method = "pearson"), 
+            spearman = cor(seguidores, engaj_total, method = "spearman"),
+            kendall = cor(seguidores, engaj_total, method = "kendall"))
 
 ```
 
-Segundo o gráfico apresentado, o parlamentar que mais possui seguidores é também um dos que menos tem engage dentro da rede, contudo o comportamento mais comum é um equilíbrio entre quantidade de seguidores e engajamento. 
 
-
-#### 1.2 Então quem são os mais populares? São os que mais produzem conteúdo próprio? 
-```{r}
-ativos_2019 %>% 
-  ggplot(aes(x = seguidores, y = n_proprio, group=engaj_total_proprio)) +geom_point(aes(size = engaj_total_proprio), alpha =.5, color="blue")
-
-
-```
-
-Existem alguns poucos casos de parlamentares que, segundo o gráfico, produzem pouco conteúdo próprio e tem muitos seguidores, três pontos distintitos estão de acordo com essa afirmação. A maioria segue um padrão bem próximo de quantidade de seguidores, mas a minoria produz algum conteúdo autoral. 
+Observamos que a quantidade de seguidores para os mais seguidos não tem uma forte correlação com a variável engajamento total. Já para os parlamentares que consideramos um número de seguidores padrão, o método de spearman aponta uma correlação mediana positiva de 0.57.
 
 
 
-### 2.  Qual o partido qual o partido mais assíduo  no twitter?
+
+
+Outras variáveis que talvez tenham alguma relação, seria o número de tweets escritos pelo próprio parlamentar e o quanto de "atenção" (likes e retweets) as postagens do parlamentar recebem. 
+Ou seja, iremos descobrir a correlação entre n_próprio e engaj_total_próprio.
 
 ```{r}
 
-ativos_2019 <- atividade %>% 
-  filter(!is.na(twitter), seguidores != 0, segue != 0, engaj_mediano > 20, engaj_mediano_proprio > 20)
-
-agrupados_partido <- ativos_2019 %>%
-  group_by(partido) %>% summarise(media = mean(engaj_total))
-
-agrupados_partido %>%
-    ggplot(aes(x = partido, y = media)) +
-    geom_col()
-  
+ativos %>%  
+  ggplot(aes(x = n_proprio, y = engaj_total_proprio)) + 
+  geom_point(color = 'blue', size = 4, alpha = .4) +
+     labs(title = "Distribuição do conteúdo próprio pelo engajamento em conteúdo autoral",
+             x = "Conteúdo próprio", y = "Engajamento em conteúdo autoral")
 
 ```
 
-Os três partidos mais assíduos do Twitter, mostrados no gráfico, são PSOL, PSL e PCdoB. A assíduidade nesse caso foi calculada como a média do engajamento total do partido, ou seja (soma do engajamento_total de cada parlamentar/quantidade de parlamentares).
 
-
-
-#### 2.1 O partido que possui mais assíduo é também o que mais possui parlamentares ativos? (possuem twitter)
+O coeficiente de spearman não é sensível a assimetrias na distribuição, já o de pearson sim. Observando o gráfico é possível perceber que os dados não forma uma nuvem  “bem  comportada”,  com  alguns  pontos  muito  afastados dos restantes, sendo assim, será mais adequado usar Spearman para observar a correlação. 
 
 ```{r}
-
-partidos_assiduos <- ativos_2019 %>% 
- group_by(partido) %>% summarise(count=n()) %>% inner_join(ativos_2019, by='partido')
-
- ggplot(partidos_assiduos, aes(x = partido, y = count)) +    
-     geom_jitter(width = 1, size = 4, alpha = .7, height = 1, aes(colour = partido))
+ativos %>% 
+    summarise(spearman = cor(n_proprio, engaj_total_proprio, method = "spearman"))
 ```
 
-De acordo com a resposta anterior, dos partidos mais ativos na rede, o PSL é o segundo mais assíduo e possui um dos maiores números de parlamentares ativos. Enquanto o PCdoB tem um número de participantes do twitter muito inferior ao PSL, contudo tem uma das maiores assiduidades. 
 
-
-#### 2.2 E o partido mais assíduo e/ou com mais parlamentares ativos, possui o maior número de seguidores no total?
-```{r}
-partidos_assiduos %>% 
- group_by(partido, seguidores) %>% summarise(count=n()) %>% inner_join(ativos_2019, by='partido') %>%
- ggplot( aes(x = partido, y = seguidores.y)) + geom_col() 
-  
-```
-
-O número de seguidores, nos dois casos em destaque (PSL e PT), realmente é proporcional a assíduidade do partido no Twitter, contudo, na maioria dos casos isso não ocorre. Alguns exemplos que podemos visualizar facilmente: PODE, que é o terceiro partido mais seguido e possui 4 parlamentares ativos, enquanto o PSDB possui o mesmo número, mas está muito atrás do PODE. 
-
-
-
-
+O correlação entre as duas variáveis é mediana, 0,74, isso significava que provavelmente a quantidade de likes e retweets muda de acordo de com a quantidade de conteúdo próprio postado, existe uma dependência razoável. 
